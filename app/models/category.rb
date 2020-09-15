@@ -7,5 +7,13 @@ class Category < ApplicationRecord
     # not necessary if you dont want to access posts from category
 
     #the lambda will save the post into category in descending
-    #order not display in descending roder
+    #order not display in descending order
+
+    before_save :create_slug 
+
+    def create_slug
+        # seld => point to the instnace of category!
+        self.slug = self.name.downcase.tr(" ", "-")
+    end
+
 end

@@ -1,6 +1,7 @@
 class PostsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_post, only: [:show, :edit, :update, :destroy]
-
+  before_action :check_authorization?, only: [:edit, :update, :destroy] 
   # GET /posts
   # GET /posts.json
   def index
@@ -27,8 +28,11 @@ class PostsController < ApplicationController
   # POST /posts
   # POST /posts.json
   def create
-    @post = Post.new(post_params)
 
+    @post = Post.new(post_params)
+    #current user is a dyanmic method, checks if threre is
+    #any current user in session storage
+    @post.user = current_user
     respond_to do |format|
       if @post.save
         format.html { redirect_to @post, notice: 'Post was successfully created.' }
@@ -72,6 +76,19 @@ class PostsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def post_params
-      params.require(:post).permit(:title, :body, :published, :category_id)
+      params.require(:post).permit(:title, :body, :published, :category_id,:all_tags, tag_ids:[])
     end
+
+    def check_authorization?
+      unless authorize?(@post)
+        flash[:notice] = "Unauthorized"
+        redirect_back(fallback_location: root_path)
+      end
+    end
+    # this is a helper method not a path param method
+    def authorize? (post)
+      current_user.id == post.user_id
+    end
+
+    helper_method :authorize? # makes private method accessible to views and other modules
 end

@@ -28,7 +28,13 @@ class HomeController < ApplicationController
         @post = Post.find(params[:id])
     end
     def category_search
-        @category = Category.find(params[:id])
+        if params.has_key? (:category_slug)
+            result = Category.where(slug: params[:category_slug])
+            @posts = result.blank? ? [] : result.first.posts
+      
+        end
+      
+          render "home/index"
     end
 
     def about 
